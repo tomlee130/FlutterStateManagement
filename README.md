@@ -4,6 +4,12 @@
 
 ![Image](resources/IMG_2758.PNG)
 
+
+![Image](resources/IMG_2761.PNG)
+
+
+![Image](resources/IMG_2762.PNG)
+
 ## 项目结构
 
 项目包含五个不同的状态管理实现：
