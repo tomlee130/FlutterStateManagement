@@ -360,3 +360,29 @@ class GetXCounterPage extends StatelessWidget {
 - [flutter_highlight](https://pub.dev/packages/flutter_highlight): ^0.7.0
 - [highlight](https://pub.dev/packages/highlight): ^0.7.0
 - [flutter_markdown](https://pub.dev/packages/flutter_markdown): ^0.6.18
+
+## 资源
+
+### 官方文档
+
+- [Flutter 官方文档](https://flutter.dev/docs)
+- [Dart 官方文档](https://dart.dev/guides)
+
+### 状态管理相关
+
+- [Flutter Bloc 文档](https://bloclibrary.dev/)
+- [Provider 文档](https://pub.dev/documentation/provider/latest/)
+- [GetX 文档](https://pub.dev/documentation/get/latest/)
+- [Flutter 官方状态管理指南](https://flutter.dev/docs/development/data-and-backend/state-mgmt/intro)
+
+### 教程与文章
+
+- [Flutter 状态管理终极指南](https://blog.logrocket.com/ultimate-guide-state-management-flutter/)
+- [Flutter 中的响应式编程 (RxDart)](https://medium.com/flutter-community/reactive-programming-streams-bloc-6f0d2bd2d248)
+- [Flutter 中的 MVVM 模式](https://medium.com/flutterdevs/mvvm-in-flutter-edd212fd767a)
+
+### 视频资源
+
+- [Flutter 中的 Bloc 模式](https://www.youtube.com/watch?v=oxj0RzcNp-Y)
+- [Flutter 使用 Provider 进行状态管理](https://www.youtube.com/watch?v=pngZRJFPz3s)
+- [Flutter 中的 GetX 状态管理](https://www.youtube.com/watch?v=wtHBdsF4rjU)

@@ -47,6 +47,42 @@ class CodeRepository {
 - 支持明暗两种主题切换
 - 代码复制功能
 - 适配多种编程语言的语法高亮
+
+## 依赖
+
+- [bloc](https://pub.dev/packages/bloc): ^8.1.1
+- [flutter_bloc](https://pub.dev/packages/flutter_bloc): ^8.1.1
+- [provider](https://pub.dev/packages/provider): ^6.1.1
+- [get](https://pub.dev/packages/get): ^4.6.6
+- [flutter_highlight](https://pub.dev/packages/flutter_highlight): ^0.7.0
+- [highlight](https://pub.dev/packages/highlight): ^0.7.0
+- [flutter_markdown](https://pub.dev/packages/flutter_markdown): ^0.6.18
+
+## 资源
+
+### 官方文档
+
+- [Flutter 官方文档](https://flutter.dev/docs)
+- [Dart 官方文档](https://dart.dev/guides)
+
+### 状态管理相关
+
+- [Flutter Bloc 文档](https://bloclibrary.dev/)
+- [Provider 文档](https://pub.dev/documentation/provider/latest/)
+- [GetX 文档](https://pub.dev/documentation/get/latest/)
+- [Flutter 官方状态管理指南](https://flutter.dev/docs/development/data-and-backend/state-mgmt/intro)
+
+### 教程与文章
+
+- [Flutter 状态管理终极指南](https://blog.logrocket.com/ultimate-guide-state-management-flutter/)
+- [Flutter 中的响应式编程 (RxDart)](https://medium.com/flutter-community/reactive-programming-streams-bloc-6f0d2bd2d248)
+- [Flutter 中的 MVVM 模式](https://medium.com/flutterdevs/mvvm-in-flutter-edd212fd767a)
+
+### 视频资源
+
+- [Flutter 中的 Bloc 模式](https://www.youtube.com/watch?v=oxj0RzcNp-Y)
+- [Flutter 使用 Provider 进行状态管理](https://www.youtube.com/watch?v=pngZRJFPz3s)
+- [Flutter 中的 GetX 状态管理](https://www.youtube.com/watch?v=wtHBdsF4rjU)
 ''';
 
       case 'VERSION.MD':
@@ -88,6 +124,82 @@ class CodeRepository {
    - 响应式变量（.obs）
    - 简洁的控制器模式
    - 自动状态同步
+
+### 共享功能
+
+每种实现都提供以下功能：
+- 显示当前计数值
+- 增加计数按钮
+- 减少计数按钮（不允许值小于0）
+- 重置计数按钮
+- 一致的UI设计和用户体验
+
+### 导航与路由
+
+- 统一的主页面选择器
+- 使用命名路由系统
+- 每个实现均可独立访问
+- 支持返回主页面
+
+### 源代码浏览功能
+
+- **文件浏览器**
+  - 按实现类别分组展示源代码文件
+  - 树状结构展开/折叠
+  - 文件描述和路径信息
+
+- **代码查看器**
+  - 语法高亮显示（使用flutter_highlight）
+  - 支持Dart、Java、JavaScript等多种语言
+  - 明暗两种主题切换
+  - 代码复制功能
+  - 滚动和选择功能
+
+- **资源管理**
+  - 源代码文件作为assets加载
+  - 硬编码备份机制
+  - 自动识别文件类型
+  - 支持查看Markdown格式的README和版本历史文档，标准Markdown渲染
+
+### 用户界面
+
+- Material Design 3设计风格
+- 响应式布局适配不同屏幕尺寸
+- 主题定制和切换
+- 统一的视觉风格
+
+### 文档
+
+- 详细的README.md文档
+- 各种状态管理方式比较
+- 源代码预览
+- 环境和依赖说明
+- 资源链接集合（官方文档、教程与文章、视频资源）
+
+### 技术规格
+
+- Flutter: 3.22.0
+- Dart: 3.4.0
+- 依赖包:
+  - bloc: ^8.1.1
+  - flutter_bloc: ^8.1.1
+  - provider: ^6.1.1
+  - get: ^4.6.6
+  - flutter_highlight: ^0.7.0
+  - highlight: ^0.7.0
+  - flutter_markdown: ^0.6.18
+
+### 已知问题
+
+- 在某些较低版本的Flutter环境可能存在兼容性问题
+- Assets加载在web平台可能需要额外配置
+
+### 后续规划
+
+- 添加更多状态管理实现方式
+- 添加单元测试和集成测试
+- 性能基准测试比较
+- 更复杂的示例应用场景
 ''';
 
       case 'lib/bloc/event.dart':
