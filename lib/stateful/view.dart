@@ -39,7 +39,7 @@ class _StatefulCounterPageState extends State<StatefulCounterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('StatefulWidget 计数器'),
+        title: const Text('StatefulWidget'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),

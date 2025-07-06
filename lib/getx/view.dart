@@ -13,7 +13,7 @@ class GetXCounterPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GetX 计数器'),
+        title: const Text('GetX'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),

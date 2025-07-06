@@ -1,14 +1,14 @@
 # Flutter 状态管理示例
 
-本项目展示了Flutter中五种不同的状态管理实现方式，每种实现都创建了相同功能的计数器应用，以便于比较它们的异同。
+本项目展示了Flutter中六种不同的状态管理实现方式，每种实现都创建了相同功能的计数器应用，以便于比较它们的异同。
 
-![Image](resources/IMG_2758.PNG)
-
-
-![Image](resources/IMG_2761.PNG)
+![Image](resources/IMG_3531.jpg)
 
 
-![Image](resources/IMG_2762.PNG)
+![Image](resources/IMG_3532.jpg)
+
+
+![Image](resources/IMG_3535.jpg)
 
 ## 项目结构
 
@@ -19,6 +19,7 @@
 - **Stream**：使用原生Dart Stream实现的计数器
 - **StatefulWidget**：使用Flutter内置StatefulWidget实现的计数器
 - **GetX**：使用GetX包实现的计数器
+- **isolate**：使用isolate包实现的计数器
 
 每个实现都在独立的目录中，拥有相似的代码结构和功能。
 
@@ -26,18 +27,12 @@
 
 所有计数器实现具有相同的功能：
 
-- 显示当前计数值
-- 增加计数按钮
-- 减少计数按钮（不允许小于0）
-- 重置计数按钮
-
 此外，应用还提供了**源代码浏览器**功能，允许用户在运行时直接查看所有实现的源代码：
 
 - 按类别组织的源代码文件结构
 - 带有语法高亮的代码查看器
-- 支持明暗两种主题切换
 - 代码复制功能
-- 适配多种编程语言的语法高亮
+
 - **项目文档查看**：可以直接在应用内查看README和版本历史，支持标准Markdown渲染
 
 ## 各种状态管理方式比较
@@ -100,6 +95,22 @@
   - `lib/getx/controller.dart`：GetX控制器
   - `lib/getx/view.dart`：UI实现
 
+### isolate
+- **特点**：并行
+#### 性能优势
+
+1. **并行处理**: 计数器逻辑在独立线程中运行，不会阻塞 UI
+2. **内存隔离**: 每个 Isolate 有独立的内存空间，避免内存竞争
+3. **错误隔离**: Isolate 中的错误不会影响主线程
+4. **可扩展性**: 可以轻松创建多个 Isolate 处理不同任务
+
+#### 适用场景
+
+- 计算密集型任务
+- 需要真正并行处理的场景
+- 对性能要求极高的应用
+- 需要错误隔离的关键任务
+
 ## 选择合适的状态管理方式
 
 选择状态管理方案时应考虑：
@@ -128,7 +139,7 @@
 
 ## 环境
 
-- Flutter: 3.22.0
+- Flutter: 3.22.0+
 - Dart: 3.4.0
 
 ## 版本信息
@@ -139,225 +150,6 @@
 
 ## 源代码预览
 
-### Bloc 模式
-
-**event.dart**
-```dart
-abstract class CounterEvent {}
-
-class InitEvent extends CounterEvent {}
-
-class IncrementEvent extends CounterEvent {}
-
-class DecrementEvent extends CounterEvent {}
-```
-
-**state.dart**
-```dart
-class CounterState {
-  final int count;
-
-  CounterState({this.count = 0});
-
-  CounterState init() {
-    return CounterState(count: 0);
-  }
-
-  CounterState copyWith({int? count}) {
-    return CounterState(
-      count: count ?? this.count,
-    );
-  }
-}
-```
-
-**bloc.dart**
-```dart
-class CounterBloc extends Bloc<CounterEvent, CounterState> {
-  CounterBloc() : super(CounterState().init()) {
-    on<InitEvent>((event, emit) async {
-      emit(await init());
-    });
-    
-    on<IncrementEvent>((event, emit) {
-      emit(state.copyWith(count: state.count + 1));
-    });
-    
-    on<DecrementEvent>((event, emit) {
-      if (state.count > 0) {
-        emit(state.copyWith(count: state.count - 1));
-      }
-    });
-  }
-
-  Future<CounterState> init() async {
-    return CounterState().clone();
-  }
-}
-```
-
-### Provider 模式
-
-**provider.dart**
-```dart
-class CounterProvider extends ChangeNotifier {
-  int _count = 0;
-  
-  int get count => _count;
-  
-  void increment() {
-    _count++;
-    notifyListeners();
-  }
-  
-  void decrement() {
-    if (_count > 0) {
-      _count--;
-      notifyListeners();
-    }
-  }
-  
-  void reset() {
-    _count = 0;
-    notifyListeners();
-  }
-}
-```
-
-### Stream 模式
-
-**counter_stream.dart**
-```dart
-class CounterStream {
-  final _counterController = StreamController<int>.broadcast();
-  
-  int _count = 0;
-  
-  Stream<int> get stream => _counterController.stream;
-  
-  int get count => _count;
-  
-  void increment() {
-    _count++;
-    _counterController.sink.add(_count);
-  }
-  
-  void decrement() {
-    if (_count > 0) {
-      _count--;
-      _counterController.sink.add(_count);
-    }
-  }
-  
-  void reset() {
-    _count = 0;
-    _counterController.sink.add(_count);
-  }
-  
-  void dispose() {
-    _counterController.close();
-  }
-}
-```
-
-### StatefulWidget 模式
-
-**counter_state.dart**
-```dart
-class CounterState {
-  final int count;
-
-  const CounterState({this.count = 0});
-
-  CounterState copyWith({int? count}) {
-    return CounterState(
-      count: count ?? this.count,
-    );
-  }
-}
-```
-
-**view.dart (核心代码片段)**
-```dart
-class _StatefulCounterPageState extends State<StatefulCounterPage> {
-  CounterState _state = const CounterState();
-
-  void _increment() {
-    setState(() {
-      _state = _state.copyWith(count: _state.count + 1);
-    });
-  }
-
-  void _decrement() {
-    if (_state.count > 0) {
-      setState(() {
-        _state = _state.copyWith(count: _state.count - 1);
-      });
-    }
-  }
-}
-```
-
-### GetX 模式
-
-**controller.dart**
-```dart
-class CounterController extends GetxController {
-  final count = 0.obs;
-  
-  void increment() {
-    count.value++;
-  }
-  
-  void decrement() {
-    if (count.value > 0) {
-      count.value--;
-    }
-  }
-  
-  void reset() {
-    count.value = 0;
-  }
-}
-```
-
-**view.dart (核心代码片段)**
-```dart
-class GetXCounterPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(CounterController());
-
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: [
-            // 使用Obx自动监听状态变化并重建UI
-            Obx(
-              () => Text(
-                '${controller.count.value}',
-                style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: controller.decrement,
-                  child: const Icon(Icons.remove),
-                ),
-                ElevatedButton(
-                  onPressed: controller.increment,
-                  child: const Icon(Icons.add),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
 
 ## 依赖
 

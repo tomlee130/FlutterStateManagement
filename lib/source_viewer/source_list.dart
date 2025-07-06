@@ -73,7 +73,15 @@ class _SourceCodeBrowserState extends State<SourceCodeBrowser> {
               _CodeFile('控制器', 'lib/getx/controller.dart', 'dart'),
               _CodeFile('UI视图', 'lib/getx/view.dart', 'dart'),
             ]),
-            _buildCategoryTile(context, '应用核心', [
+            _buildCategoryTile(context, 'Isolate 实现', [
+              _CodeFile('Isolate 管理器', 'lib/isolate/isolate_manager.dart', 'dart'),
+              _CodeFile('消息定义', 'lib/isolate/counter_messages.dart', 'dart'),
+              _CodeFile('计数器 Isolate', 'lib/isolate/counter_isolate.dart', 'dart'),
+              _CodeFile('UI视图', 'lib/isolate/view.dart', 'dart'),
+              _CodeFile('大师级设计文档', 'lib/isolate/README.md', 'markdown'),
+              _CodeFile('大师级设计文档', 'lib/isolate/MASTER_LEVEL_DESIGN.md', 'markdown'),
+            ]),
+            _buildCategoryTile(context, '首页菜单', [
               _CodeFile('主程序', 'lib/main.dart', 'dart'),
             ]),
           ],

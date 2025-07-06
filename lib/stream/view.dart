@@ -24,7 +24,7 @@ class _StreamPageState extends State<StreamPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stream 计数器示例'),
+        title: const Text('Stream'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),

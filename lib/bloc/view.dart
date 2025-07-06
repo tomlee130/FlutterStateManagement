@@ -19,7 +19,7 @@ class CounterPage extends StatelessWidget {
   Widget _buildPage(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bloc 计数器'),
+        title: const Text('Bloc'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),

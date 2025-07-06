@@ -7,6 +7,7 @@ import 'getx/view.dart';
 import 'provider/view.dart';
 import 'stateful/view.dart';
 import 'stream/view.dart';
+import 'isolate/view.dart';
 import 'source_viewer/source_list.dart';
 
 // 事件
@@ -77,6 +78,7 @@ class MyApp extends StatelessWidget {
         '/stream': (context) => const StreamPage(),
         '/stateful': (context) => const StatefulCounterPage(),
         '/getx': (context) => const GetXCounterPage(),
+        '/isolate': (context) => const IsolateCounterPage(),
         '/source_browser': (context) => const SourceCodeBrowser(),
       },
       initialRoute: '/',
@@ -142,6 +144,14 @@ class HomePage extends StatelessWidget {
               description: '使用GetX进行状态管理和依赖注入',
               icon: Icons.catching_pokemon,
               route: '/getx',
+            ),
+            const SizedBox(height: 16),
+            _buildOptionCard(
+              context,
+              title: 'Isolate 实现',
+              description: '使用Isolate进行多线程状态管理',
+              icon: Icons.memory,
+              route: '/isolate',
             ),
           ],
         ),
