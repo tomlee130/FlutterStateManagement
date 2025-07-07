@@ -32,13 +32,21 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
     _initTts();
   }
 
-  void _initTts() {
+  void _initTts() async {
     _flutterTts = FlutterTts();
-    _flutterTts.setLanguage("zh-CN");
-    _flutterTts.setSpeechRate(0.5);
-    _flutterTts.setVolume(1.0);
-    _flutterTts.setPitch(1.0);
     
+    // 配置TTS引擎
+    await _configureTtsEngine();
+
+    // 配置语言
+    await _configureLanguage();
+
+    // 配置语音参数
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.setVolume(1.0);
+    await _flutterTts.setPitch(1.0);
+
+    // 设置事件处理器
     _flutterTts.setStartHandler(() {
       setState(() {
         _isSpeaking = true;
@@ -63,6 +71,72 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
     });
   }
 
+  Future<void> _configureTtsEngine() async {
+    try {
+      // 获取可用的TTS引擎
+      var engines = await _flutterTts.getEngines;
+      print('可用TTS引擎: $engines');
+
+      // 优先尝试Google TTS引擎（最通用）
+      if (engines.contains('com.google.android.tts')) {
+        await _flutterTts.setEngine('com.google.android.tts');
+        print('使用Google TTS引擎');
+        return;
+      }
+
+      // 尝试其他常见的TTS引擎
+      List<String> commonEngines = [
+        'com.android.tts',
+        'com.samsung.tts',
+        'com.huawei.tts',
+        'com.oppo.tts',
+        'com.vivo.tts',
+        'com.miui.tts',
+      ];
+
+      for (String engine in commonEngines) {
+        if (engines.contains(engine)) {
+          try {
+            await _flutterTts.setEngine(engine);
+            print('使用TTS引擎: $engine');
+            return;
+          } catch (e) {
+            print('设置引擎 $engine 失败: $e');
+          }
+        }
+      }
+
+      // 如果都不可用，使用系统默认引擎
+      print('使用系统默认TTS引擎');
+    } catch (e) {
+      print('配置TTS引擎时出错: $e');
+    }
+  }
+
+  Future<void> _configureLanguage() async {
+    try {
+      // 检查中文是否可用
+      var ttsStatus = await _flutterTts.isLanguageAvailable("zh-CN");
+      if (ttsStatus == 1) {
+        await _flutterTts.setLanguage("zh-CN");
+        print('设置中文语音');
+      } else {
+        // 如果中文不可用，尝试英文
+        ttsStatus = await _flutterTts.isLanguageAvailable("en-US");
+        if (ttsStatus == 1) {
+          await _flutterTts.setLanguage("en-US");
+          print('设置英文语音');
+        } else {
+          // 使用系统默认语言
+          await _flutterTts.setLanguage("");
+          print('使用系统默认语音');
+        }
+      }
+    } catch (e) {
+      print('配置语言时出错: $e');
+    }
+  }
+
   @override
   void dispose() {
     _flutterTts.stop();
@@ -84,6 +158,11 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
               icon: Icon(_isSpeaking ? Icons.stop : Icons.volume_up),
               onPressed: _isSpeaking ? _stopSpeaking : _speakCode,
               tooltip: _isSpeaking ? '停止朗读' : '朗读全文',
+            ),
+            IconButton(
+              icon: const Icon(Icons.bug_report),
+              onPressed: _testTts,
+              tooltip: '测试TTS',
             ),
             IconButton(
               icon: const Icon(Icons.copy),
@@ -164,6 +243,13 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
 
   void _speakCode() async {
     try {
+      // 首先检查TTS是否可用
+      var engines = await _flutterTts.getEngines;
+      var languages = await _flutterTts.getLanguages;
+
+      print('TTS Engines: $engines');
+      print('TTS Languages: $languages');
+      
       final code = await CodeRepository.getSourceCode(widget.filePath);
       if (code.isNotEmpty) {
         String textToSpeak;
@@ -171,13 +257,20 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
         if (widget.language == 'markdown') {
           // 对于markdown文件，朗读内容
           textToSpeak = _processMarkdownForSpeech(code);
-          print(textToSpeak);
         } else {
           // 对于代码文件，朗读文件信息和主要结构
           textToSpeak = _processCodeForSpeech(code);
         }
         
-        await _flutterTts.speak(textToSpeak);
+        print('准备朗读文本: $textToSpeak');
+
+        // 尝试朗读
+        var result = await _flutterTts.speak(textToSpeak);
+        print('TTS Speak Result: $result');
+
+        if (result != 1) {
+          throw Exception('TTS朗读失败，返回码: $result');
+        }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -186,9 +279,13 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
         }
       }
     } catch (e) {
+      print('TTS Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('朗读失败: $e')),
+          SnackBar(
+            content: Text('朗读失败: $e'),
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
     }
@@ -218,26 +315,29 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
     int functionCount = 0;
     int importCount = 0;
     int commentCount = 0;
-    
+
+    String description = '${widget.title}，这是一个 ${widget.language} 文件。共 $totalLines 行代码';
+
     for (String line in lines) {
       final trimmedLine = line.trim();
       if (trimmedLine.startsWith('class ')) classCount++;
-      if (trimmedLine.startsWith('void ') || trimmedLine.startsWith('String ') || 
+      if (trimmedLine.startsWith('void ') ||
+          trimmedLine.startsWith('String ') ||
           trimmedLine.startsWith('int ') || trimmedLine.startsWith('bool ') ||
-          trimmedLine.startsWith('Widget ') || trimmedLine.startsWith('Future<')) functionCount++;
+          trimmedLine.startsWith('Widget ') ||
+          trimmedLine.startsWith('Future<')) functionCount++;
       if (trimmedLine.startsWith('import ')) importCount++;
-      if (trimmedLine.startsWith('//') || trimmedLine.startsWith('/*')) commentCount++;
+      if (trimmedLine.startsWith('//') || trimmedLine.startsWith('/*')) {
+        commentCount++;
+        description += trimmedLine.replaceAll('/', '');
+      }
     }
-    
-    String description = '文件 ${widget.title}，共 $totalLines 行代码';
-    
+
     if (importCount > 0) description += '，包含 $importCount 个导入语句';
     if (classCount > 0) description += '，定义了 $classCount 个类';
     if (functionCount > 0) description += '，包含 $functionCount 个函数';
     if (commentCount > 0) description += '，有 $commentCount 行注释';
-    
-    description += '。这是一个 ${widget.language} 文件。';
-    
+
     return description;
   }
 
@@ -248,6 +348,58 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('停止朗读失败: $e')),
+        );
+      }
+    }
+  }
+
+  void _testTts() async {
+    try {
+      print('开始TTS测试...');
+
+      // 获取可用的TTS引擎
+      var engines = await _flutterTts.getEngines;
+      print('可用TTS引擎: $engines');
+
+      // 检查常见TTS引擎
+      bool hasGoogleTts = engines.contains('com.google.android.tts');
+      bool hasSystemTts = engines.contains('com.android.tts');
+
+      print('Google TTS引擎可用: $hasGoogleTts');
+      print('系统TTS引擎可用: $hasSystemTts');
+
+      // 获取当前引擎
+      var currentEngine = await _flutterTts.getDefaultEngine;
+      print('当前TTS引擎: $currentEngine');
+
+      // 测试简单的文本朗读
+      var result = await _flutterTts.speak('测试TTS功能');
+      print('TTS测试结果: $result');
+
+      String message = 'TTS测试';
+      if (result == 1) {
+        message += '成功';
+        if (hasGoogleTts) {
+          message += '，使用Google TTS引擎';
+        } else if (hasSystemTts) {
+          message += '，使用系统TTS引擎';
+        } else {
+          message += '，使用默认引擎';
+        }
+      } else {
+        message += '失败，返回码: $result';
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } catch (e) {
+      print('TTS测试错误: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('TTS测试错误: $e')),
         );
       }
     }
