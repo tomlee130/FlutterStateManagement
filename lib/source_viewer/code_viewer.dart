@@ -73,41 +73,50 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
 
   Future<void> _configureTtsEngine() async {
     try {
-      // 获取可用的TTS引擎
-      var engines = await _flutterTts.getEngines;
-      print('可用TTS引擎: $engines');
-
-      // 优先尝试Google TTS引擎（最通用）
-      if (engines.contains('com.google.android.tts')) {
-        await _flutterTts.setEngine('com.google.android.tts');
-        print('使用Google TTS引擎');
+      // 检查平台，iOS不支持getEngines方法
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        print('iOS平台，使用系统默认TTS引擎');
         return;
       }
 
-      // 尝试其他常见的TTS引擎
-      List<String> commonEngines = [
-        'com.android.tts',
-        'com.samsung.tts',
-        'com.huawei.tts',
-        'com.oppo.tts',
-        'com.vivo.tts',
-        'com.miui.tts',
-      ];
+      // Android平台才尝试设置特定引擎
+      try {
+        var engines = await _flutterTts.getEngines;
+        print('可用TTS引擎: $engines');
 
-      for (String engine in commonEngines) {
-        if (engines.contains(engine)) {
-          try {
-            await _flutterTts.setEngine(engine);
-            print('使用TTS引擎: $engine');
-            return;
-          } catch (e) {
-            print('设置引擎 $engine 失败: $e');
+        // 优先尝试Google TTS引擎（最通用）
+        if (engines.contains('com.google.android.tts')) {
+          await _flutterTts.setEngine('com.google.android.tts');
+          print('使用Google TTS引擎');
+          return;
+        }
+
+        // 尝试其他常见的TTS引擎
+        List<String> commonEngines = [
+          'com.android.tts',
+          'com.samsung.tts',
+          'com.huawei.tts',
+          'com.oppo.tts',
+          'com.vivo.tts',
+          'com.miui.tts',
+        ];
+
+        for (String engine in commonEngines) {
+          if (engines.contains(engine)) {
+            try {
+              await _flutterTts.setEngine(engine);
+              print('使用TTS引擎: $engine');
+              return;
+            } catch (e) {
+              print('设置引擎 $engine 失败: $e');
+            }
           }
         }
+        
+        print('使用系统默认TTS引擎');
+      } catch (e) {
+        print('获取TTS引擎列表失败: $e，使用系统默认引擎');
       }
-
-      // 如果都不可用，使用系统默认引擎
-      print('使用系统默认TTS引擎');
     } catch (e) {
       print('配置TTS引擎时出错: $e');
     }
@@ -243,13 +252,6 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
 
   void _speakCode() async {
     try {
-      // 首先检查TTS是否可用
-      var engines = await _flutterTts.getEngines;
-      var languages = await _flutterTts.getLanguages;
-
-      print('TTS Engines: $engines');
-      print('TTS Languages: $languages');
-      
       final code = await CodeRepository.getSourceCode(widget.filePath);
       if (code.isNotEmpty) {
         String textToSpeak;
@@ -263,11 +265,25 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
         }
         
         print('准备朗读文本: $textToSpeak');
-
+        
+        // 检查平台并获取TTS信息
+        if (Theme.of(context).platform == TargetPlatform.iOS) {
+          print('iOS平台TTS朗读');
+        } else {
+          try {
+            var engines = await _flutterTts.getEngines;
+            var languages = await _flutterTts.getLanguages;
+            print('TTS Engines: $engines');
+            print('TTS Languages: $languages');
+          } catch (e) {
+            print('获取TTS信息失败: $e');
+          }
+        }
+        
         // 尝试朗读
         var result = await _flutterTts.speak(textToSpeak);
         print('TTS Speak Result: $result');
-
+        
         if (result != 1) {
           throw Exception('TTS朗读失败，返回码: $result');
         }
@@ -356,40 +372,63 @@ class _CodeViewerPageState extends State<CodeViewerPage> {
   void _testTts() async {
     try {
       print('开始TTS测试...');
-
-      // 获取可用的TTS引擎
-      var engines = await _flutterTts.getEngines;
-      print('可用TTS引擎: $engines');
-
-      // 检查常见TTS引擎
-      bool hasGoogleTts = engines.contains('com.google.android.tts');
-      bool hasSystemTts = engines.contains('com.android.tts');
-
-      print('Google TTS引擎可用: $hasGoogleTts');
-      print('系统TTS引擎可用: $hasSystemTts');
-
-      // 获取当前引擎
-      var currentEngine = await _flutterTts.getDefaultEngine;
-      print('当前TTS引擎: $currentEngine');
-
-      // 测试简单的文本朗读
-      var result = await _flutterTts.speak('测试TTS功能');
-      print('TTS测试结果: $result');
-
+      
       String message = 'TTS测试';
-      if (result == 1) {
-        message += '成功';
-        if (hasGoogleTts) {
-          message += '，使用Google TTS引擎';
-        } else if (hasSystemTts) {
-          message += '，使用系统TTS引擎';
+
+      // 检查平台
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        print('iOS平台TTS测试');
+
+        // iOS平台直接测试朗读
+        var result = await _flutterTts.speak('测试TTS功能');
+        print('iOS TTS测试结果: $result');
+
+        if (result == 1) {
+          message += '成功，使用iOS系统TTS';
         } else {
-          message += '，使用默认引擎';
+          message += '失败，返回码: $result';
         }
       } else {
-        message += '失败，返回码: $result';
-      }
+        // Android平台
+        try {
+          var engines = await _flutterTts.getEngines;
+          print('可用TTS引擎: $engines');
 
+          // 检查常见TTS引擎
+          bool hasGoogleTts = engines.contains('com.google.android.tts');
+          bool hasSystemTts = engines.contains('com.android.tts');
+
+          print('Google TTS引擎可用: $hasGoogleTts');
+          print('系统TTS引擎可用: $hasSystemTts');
+          
+          // 测试简单的文本朗读
+          var result = await _flutterTts.speak('测试TTS功能');
+          print('Android TTS测试结果: $result');
+          
+          if (result == 1) {
+            message += '成功';
+            if (hasGoogleTts) {
+              message += '，使用Google TTS引擎';
+            } else if (hasSystemTts) {
+              message += '，使用系统TTS引擎';
+            } else {
+              message += '，使用默认引擎';
+            }
+          } else {
+            message += '失败，返回码: $result';
+          }
+        } catch (e) {
+          print('Android TTS引擎检测失败: $e');
+          // 即使引擎检测失败，也尝试朗读
+          var result = await _flutterTts.speak('测试TTS功能');
+          if (result == 1) {
+            message += '成功，使用默认引擎';
+          } else {
+            message += '失败，返回码: $result';
+          }
+        }
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
